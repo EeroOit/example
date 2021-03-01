@@ -25,8 +25,8 @@ jobs:
       run: |
         mkdir -p _bundle/cache
         chmod a+rwx -R .
-        docker-compose run -e JEKYLL_ENV=example jekyll bundle install
-        docker-compose run -e JEKYLL_ENV=example jekyll bundle exec jekyll build --trace
+        docker-compose run -e JEKYLL_ENV=production jekyll bundle install
+        docker-compose run -e JEKYLL_ENV=production jekyll bundle exec jekyll build --trace
 
     - name: Login to Heroku Container registry
       env:
