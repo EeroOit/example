@@ -1,9 +1,19 @@
+FROM jekyll/jekyll:3.8.3 as build-stage
+
+WORKDIR /tmp
+
+COPY Gemfile* ./
+
+RUN bundle install
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+RUN chown -R jekyll .
+
+RUN jekyll build
+
 FROM nginx:alpine
 
-# copy nginx `default.conf`
-COPY nginx/default.conf /etc/nginx/conf.d/
-# copy Jekyll generated files
-COPY _site /usr/share/nginx/html/
-
-# replace $PORT placeholder with HEROKU given port in default.conf and run nginx service
-CMD sed -i -e 's/$PORT/'"$PORT"'/g' /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
+COPY --from=build-stage /usr/src/app/_site/ /usr/share/nginx/html
