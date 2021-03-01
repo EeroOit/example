@@ -21,13 +21,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gems-
 
-    - name: Generate site
-      run: |
-        mkdir -p _bundle/cache
-        chmod a+rwx -R .
-        docker-compose run -e JEKYLL_ENV=production jekyll bundle install
-        docker-compose run -e JEKYLL_ENV=production jekyll bundle exec jekyll build --trace
-
     - name: Login to Heroku Container registry
       env:
         # run `heroku authorizations:create` to generate the HEROKU_API_KEY
