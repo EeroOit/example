@@ -1,0 +1,45 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Push Container to Heroku
+
+on:
+  push:
+    branches:
+      - gh-pages
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Retrieve Gem Bundles Cache
+      uses: actions/cache@v2
+      with:
+        path: _bundle
+        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gems-
+
+    - name: Generate site
+      run: |
+        mkdir -p _bundle/cache
+        chmod a+rwx -R .
+        docker-compose run -e JEKYLL_ENV=production jekyll bundle install
+        docker-compose run -e JEKYLL_ENV=production jekyll bundle exec jekyll build --trace
+
+    - name: Login to Heroku Container registry
+      env:
+        # run `heroku authorizations:create` to generate the HEROKU_API_KEY
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      run: heroku container:login
+
+    - name: Build and push
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      run: heroku container:push -a ${{ secrets.HEROKU_APP_NAME }} --recursive
+
+    - name: Release
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      run: heroku container:release -a ${{ secrets.HEROKU_APP_NAME }} web
